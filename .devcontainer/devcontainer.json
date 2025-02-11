@@ -3,7 +3,7 @@
     "image": "kisa-ros:humble", 
     "customizations": {
       "vscode": {
-        "extensions": ["ms-python.python", "ms-python.debugpy", "ms-toolsai.jupyter"]
+        "extensions": ["ms-python.python", "ms-python.debugpy", "ms-toolsai.jupyter", "ms-iot.vscode-ros"]
       }
     },
     "runArgs": [
