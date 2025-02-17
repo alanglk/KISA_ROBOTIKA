@@ -7,7 +7,7 @@ docker --debug build --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g) 
 ```
 
 
-Once the docker container is running use this command to attach a terminal to ir:
+Once the docker container is running use this command to attach a terminal to ir: 
 ```bash
 docker exec -it 57d0325a7216 /bin/bash
 ```
