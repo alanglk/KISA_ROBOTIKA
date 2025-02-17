@@ -1,0 +1,229 @@
+<?xml version="1.0" ?>
+<sdf version="1.8">
+  <model name="yahboom_track">
+    <static>true</static>
+    <link name="yahboom_track">
+      <visual name="TrackMap">
+        <geometry>
+          <mesh>
+            <uri>meshes/model.dae</uri>
+            <submesh>
+              <name>TrackMap</name>
+            </submesh>
+          </mesh>
+        </geometry>
+        <material>
+          <diffuse>1.0 1.0 1.0 1.0</diffuse>
+        </material>
+      </visual>
+      <visual name="DecoHouse2">
+        <geometry>
+          <mesh>
+            <uri>meshes/model.dae</uri>
+            <submesh>
+              <name>DecoHouse2</name>
+            </submesh>
+          </mesh>
+        </geometry>
+        <material>
+          <diffuse>1.0 1.0 1.0 1.0</diffuse>
+        </material>
+      </visual>
+      <visual name="DecoCone">
+        <geometry>
+          <mesh>
+            <uri>meshes/model.dae</uri>
+            <submesh>
+              <name>DecoCone</name>
+            </submesh>
+          </mesh>
+        </geometry>
+        <material>
+          <diffuse>1.0 1.0 1.0 1.0</diffuse>
+        </material>
+      </visual>
+      <visual name="DecoTreePine">
+        <geometry>
+          <mesh>
+            <uri>meshes/model.dae</uri>
+            <submesh>
+              <name>DecoTreePine</name>
+            </submesh>
+          </mesh>
+        </geometry>
+        <material>
+          <diffuse>1.0 1.0 1.0 1.0</diffuse>
+        </material>
+      </visual>
+      <visual name="SignForward">
+        <geometry>
+          <mesh>
+            <uri>meshes/model.dae</uri>
+            <submesh>
+              <name>SignForward</name>
+            </submesh>
+          </mesh>
+        </geometry>
+        <material>
+          <diffuse>1.0 1.0 1.0 1.0</diffuse>
+        </material>
+      </visual>
+      <visual name="SignFive">
+        <geometry>
+          <mesh>
+            <uri>meshes/model.dae</uri>
+            <submesh>
+              <name>SignFive</name>
+            </submesh>
+          </mesh>
+        </geometry>
+        <material>
+          <diffuse>1.0 1.0 1.0 1.0</diffuse>
+        </material>
+      </visual>
+      <visual name="SignWalking">
+        <geometry>
+          <mesh>
+            <uri>meshes/model.dae</uri>
+            <submesh>
+              <name>SignWalking</name>
+            </submesh>
+          </mesh>
+        </geometry>
+        <material>
+          <diffuse>1.0 1.0 1.0 1.0</diffuse>
+        </material>
+      </visual>
+      <visual name="SignHorn">
+        <geometry>
+          <mesh>
+            <uri>meshes/model.dae</uri>
+            <submesh>
+              <name>SignHorn</name>
+            </submesh>
+          </mesh>
+        </geometry>
+        <material>
+          <diffuse>1.0 1.0 1.0 1.0</diffuse>
+        </material>
+      </visual>
+      <visual name="SignRight">
+        <geometry>
+          <mesh>
+            <uri>meshes/model.dae</uri>
+            <submesh>
+              <name>SignRight</name>
+            </submesh>
+          </mesh>
+        </geometry>
+        <material>
+          <diffuse>1.0 1.0 1.0 1.0</diffuse>
+        </material>
+      </visual>
+      <visual name="SignChildren">
+        <geometry>
+          <mesh>
+            <uri>meshes/model.dae</uri>
+            <submesh>
+              <name>SignChildren</name>
+            </submesh>
+          </mesh>
+        </geometry>
+        <material>
+          <diffuse>1.0 1.0 1.0 1.0</diffuse>
+        </material>
+      </visual>
+      <visual name="SignParkingB">
+        <geometry>
+          <mesh>
+            <uri>meshes/model.dae</uri>
+            <submesh>
+              <name>SignParkingB</name>
+            </submesh>
+          </mesh>
+        </geometry>
+        <material>
+          <diffuse>1.0 1.0 1.0 1.0</diffuse>
+        </material>
+      </visual>
+      <visual name="SignParkingA">
+        <geometry>
+          <mesh>
+            <uri>meshes/model.dae</uri>
+            <submesh>
+              <name>SignParkingA</name>
+            </submesh>
+          </mesh>
+        </geometry>
+        <material>
+          <diffuse>1.0 1.0 1.0 1.0</diffuse>
+        </material>
+      </visual>
+      <visual name="DecoBuilding">
+        <geometry>
+          <mesh>
+            <uri>meshes/model.dae</uri>
+            <submesh>
+              <name>DecoBuilding</name>
+            </submesh>
+          </mesh>
+        </geometry>
+        <material>
+          <diffuse>1.0 1.0 1.0 1.0</diffuse>
+        </material>
+      </visual>
+      <visual name="DecoHouse1">
+        <geometry>
+          <mesh>
+            <uri>meshes/model.dae</uri>
+            <submesh>
+              <name>DecoHouse1</name>
+            </submesh>
+          </mesh>
+        </geometry>
+        <material>
+          <diffuse>1.0 1.0 1.0 1.0</diffuse>
+        </material>
+      </visual>
+      <visual name="DecoTreeRound">
+        <geometry>
+          <mesh>
+            <uri>meshes/model.dae</uri>
+            <submesh>
+              <name>DecoTreeRound</name>
+            </submesh>
+          </mesh>
+        </geometry>
+        <material>
+          <diffuse>1.0 1.0 1.0 1.0</diffuse>
+        </material>
+      </visual>
+      <visual name="SignStop">
+        <geometry>
+          <mesh>
+            <uri>meshes/model.dae</uri>
+            <submesh>
+              <name>SignStop</name>
+            </submesh>
+          </mesh>
+        </geometry>
+        <material>
+          <diffuse>1.0 1.0 1.0 1.0</diffuse>
+        </material>
+      </visual>
+      <visual name="SignTrafficLight">
+        <geometry>
+          <mesh>
+            <uri>meshes/model.dae</uri>
+            <submesh>
+              <name>SignTrafficLight</name>
+            </submesh>
+          </mesh>
+        </geometry>
+        <material>
+          <diffuse>1.0 1.0 1.0 1.0</diffuse>
+        </material>
+      </visual>
+    </link>
+  </model>
+</sdf>

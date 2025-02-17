@@ -4,5 +4,13 @@
 **/log/
 **/install/
 
+# pycache
+**/__pycache__/
+
 # VScode config
 .vscode/
+
+# compressed files
+*.bz2
+*.gz
+*.xz

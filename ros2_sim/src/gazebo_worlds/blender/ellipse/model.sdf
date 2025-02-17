@@ -1,0 +1,26 @@
+<?xml version='1.0'?>
+<sdf version='1.4'>
+
+  <model name='ellipse'>
+    <pose>30 20 0 0 0 0</pose>
+    <static>true</static>
+    <link name="wall">
+      <visual name="wall_visual">
+        <geometry>
+          <mesh>
+            <uri>model://ellipse/meshes/ellipse.dae</uri>
+            <!-- <scale> 0.5 0.5 1.0 </scale> -->
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="wall_collision">
+        <geometry>
+          <mesh>
+            <uri>model://ellipse/meshes/ellipse.dae</uri>
+            <!-- <scale> 0.5 0.5 1.0 </scale> -->
+          </mesh>
+        </geometry>
+      </collision>
+    </link>
+  </model>
+</sdf>

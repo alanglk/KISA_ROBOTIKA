@@ -1,0 +1,20 @@
+<?xml version='1.0'?>
+<sdf version='1.4'>
+
+  <model name='simple_world'>
+    <pose>30 20 0 0 0 0</pose>
+    <static>true</static>
+    <link name="wall">
+      <visual name="wall_visual">
+        <geometry>
+          <mesh><uri>model://simple_world/meshes/walls.dae</uri></mesh>
+        </geometry>
+      </visual>
+      <collision name="wall_collision">
+        <geometry>
+          <mesh><uri>model://simple_world/meshes/walls.dae</uri></mesh>
+        </geometry>
+      </collision>
+    </link>
+  </model>
+</sdf>

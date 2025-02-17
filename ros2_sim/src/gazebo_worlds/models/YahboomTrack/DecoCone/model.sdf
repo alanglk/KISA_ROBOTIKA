@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+<sdf version="1.8">
+  <model name="DecoCone">
+    <static>true</static>
+    <link name="DecoCone">
+      <visual name="visual">
+        <geometry>
+          <mesh>
+            <uri>model://YahboomTrack/DecoCone/meshes/DecoCone.dae</uri>
+            <scale>2.0 2.0 2.0</scale>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="visual">
+        <geometry>
+          <mesh>
+            <uri>model://YahboomTrack/DecoCone/meshes/DecoCone.dae</uri>
+            <scale>2.0 2.0 2.0</scale>
+          </mesh>
+        </geometry>
+      </collision>
+    </link>
+  </model>
+</sdf>
