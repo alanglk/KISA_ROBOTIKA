@@ -8,14 +8,20 @@ from geometry_msgs.msg import Twist
 import numpy as np
 
 
+import matplotlib.pyplot as plt
+from typing import Tuple
+
+
 class Robot(Node):
     def __init__(self):
         super().__init__('rwander_node')
         self.declare_parameter('vel_topic', 'cmd_vel')
         self.declare_parameter('scan_topic', 'scan')
+        self.declare_parameter('debug', True)
+        self.declare_parameter('dist_threshold', 2.0)
         vel_topic_ = self.get_parameter('vel_topic').value
         scan_topic_ = self.get_parameter('scan_topic').value
-
+        
         # ROS Subscribers
         self._laser_sub = self.create_subscription(LaserScan, scan_topic_, self.obstacle_detect, 10)
         # ROS Publishers
@@ -31,6 +37,11 @@ class Robot(Node):
         self._theta = []
 
         self._rplidar_type = "turtle" # Options: a1, s2, turtle
+
+        # Debug params
+        self.debug =  self.get_parameter('debug').value
+        self.dist_threshold = self.get_parameter('dist_threshold').value
+
 
         
     def obstacle_detect(self, scan_msg):
@@ -72,9 +83,87 @@ class Robot(Node):
         
         # TODO: START >>>>>>>>>>>>>>>>>>>>>>>>>>>>
         
-        speed = 0.0
-        turn = 0.3
         
+
+        # Find sub-sequence with max-accumulated distance
+        def max_subsequence(sequence:list, threshold:float) -> Tuple[int]:
+            max_sum = float("-inf")
+            current_sum = 0
+            start, end = 0, 0
+            temp_start = 0
+
+
+            for i in range(len(sequence)):
+                actual_value = self.sequence[i] # actual value
+                
+                if actual_value > self.dist_threshold:
+                    current_sum += actual_value
+                
+                else:
+                    if current_sum > max_sum:
+                        max_sum = current_sum
+                        start = temp_start
+                        end = i
+                
+
+                    max_sum = current_sum
+                    start = temp_start
+                    end = i
+
+                current_sum += sequence[i]
+                if current_sum > max_sum:
+                    max_sum = current_sum
+                    start = temp_start
+                    end = i
+                
+                if last_value < threshold:
+                    current_sum = 0
+                    temp_start = i + 1
+
+
+
+            assert start < len(sequence)
+            assert end < len(sequence)
+            return start, end
+
+        start, end = max_subsequence(self._scan, self.dist_threshold)
+        
+
+
+
+        # # Find 
+        # area_init = 0
+        # area_end = 0
+        # max_value = 0
+        # n = 0
+        # while i < len(self._scan):
+        #     temp_n = 0
+        #     temp_max_value = 0
+        #     while self._scan[i] > self.dist_threshold:
+        #         temp_n += 1
+        #         temp_value += self._scan_f
+        #         i+=1
+        #     temp_max_value = temp_value / temp_n
+        #     if temp_max_value > max_value:
+        #         max_value = temp_max_value
+        #         n = temp_n
+        #     
+        #     i+=1
+        
+        
+        speed = 0.0
+        turn = 0.0
+        
+        # Debug
+        if self.debug:
+            plt.cla()
+            plt.bar(x=list(range(len(self._scan))), height=self._scan)
+            plt.axvline(x=start, color="r")
+            plt.axvline(x=end, color="r")
+            plt.axhline(y = self.dist_threshold, color = 'r', linestyle = '-') 
+            plt.pause(0.001)
+
+
         # TODO: END <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         
         cmd_vel_msg_ = Twist()
@@ -96,6 +185,12 @@ class Robot(Node):
 def main(args=None):
     rclpy.init(args=args)
     rwander_node = Robot()
+
+    # Initialize pytplot
+    plt.figure(figsize=(12, 8))
+    plt.ion()
+    plt.show()
+
     try:
         rclpy.spin(rwander_node)
     except KeyboardInterrupt:

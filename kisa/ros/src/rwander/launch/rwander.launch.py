@@ -11,6 +11,7 @@ def generate_launch_description():
 		parameters=[
 			{"vel_topic": "cmd_vel"},
 			{"scan_topic": "scan"},
+			{"debug": True},
 		],
 		output='screen',
 		emulate_tty=True,
