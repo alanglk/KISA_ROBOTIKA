@@ -11,6 +11,25 @@ import numpy as np
 import matplotlib.pyplot as plt
 from typing import Tuple
 
+def find_open_area(lidar_data, window_size=10):
+    # Elimina distancias muy pequeñas (ruido)
+    filtered_data = np.array([d if d > 0.2 else 0 for d in lidar_data])
+
+    # Suma inicial
+    current_sum = np.sum(filtered_data[:window_size])
+    max_sum = current_sum
+    start_index = 0
+
+    # Sliding window
+    for i in range(1, len(filtered_data) - window_size + 1):
+        current_sum = current_sum - filtered_data[i - 1] + filtered_data[i + window_size - 1]
+        if current_sum > max_sum:
+            max_sum = current_sum
+            start_index = i
+
+    end_index = start_index + window_size - 1
+    return start_index, end_index, max_sum
+
 
 class Robot(Node):
     def __init__(self):
