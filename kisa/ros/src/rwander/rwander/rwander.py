@@ -92,34 +92,22 @@ class Robot(Node):
             start, end = 0, 0
             temp_start = 0
 
+            actual_value=0
 
             for i in range(len(sequence)):
-                actual_value = self.sequence[i] # actual value
+                actual_value = sequence[i] # actual value
                 
-                if actual_value > self.dist_threshold:
+                if actual_value > threshold:
                     current_sum += actual_value
-                
+                # is smaller, so finish sum
                 else:
                     if current_sum > max_sum:
                         max_sum = current_sum
                         start = temp_start
-                        end = i
+                        end = i-1
                 
-
-                    max_sum = current_sum
-                    start = temp_start
-                    end = i
-
-                current_sum += sequence[i]
-                if current_sum > max_sum:
-                    max_sum = current_sum
-                    start = temp_start
-                    end = i
-                
-                if last_value < threshold:
-                    current_sum = 0
-                    temp_start = i + 1
-
+                        current_sum = 0
+                    
 
 
             assert start < len(sequence)
