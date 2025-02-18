@@ -30,13 +30,69 @@ def find_open_area(lidar_data, window_size=10):
     end_index = start_index + window_size - 1
     return start_index, end_index, max_sum
 
+def find_largest_window(sequence:list, threshold:float, max_distance:float=10.0) -> Tuple[int]:
+        max_window = 0
+        actual_window = 0
+        start, end = 0, 0
+        temp_start = 0
+        current_sum = 0
+        max_sum = 0
+
+        for i in range(len(sequence)):
+            if sequence[i] > threshold:
+                if sequence[i] > max_distance:
+                    current_sum += max_distance
+                else:
+                    current_sum += sequence[i]
+            else:
+                # is smaller, so finish sum
+                if current_sum > max_sum:
+                    max_sum = current_sum
+                    start = temp_start
+                    end = i-1
+                current_sum = 0
+                temp_start = i
+                        
+        assert start < len(sequence)
+        assert end < len(sequence)
+        return start, end
+
+'''def find_largest_window(sequence:list, threshold:float) -> Tuple[int]:
+        max_sum = float("-inf")
+        current_sum = 0
+        start, end = 0, 0
+        temp_start = 0
+
+        actual_value=0
+
+        for i in range(len(sequence)):
+            actual_value = sequence[i] # actual value
+            
+            if actual_value > threshold:
+                current_sum += actual_value
+            # is smaller, so finish sum
+            else:
+                if current_sum > max_sum:
+                    max_sum = current_sum
+                    start = temp_start
+                    end = i-1
+            
+                    current_sum = 0
+                
+        assert start < len(sequence)
+        assert end < len(sequence)
+        return start, end'''
+
+
+
+
 
 class Robot(Node):
     def __init__(self):
         super().__init__('rwander_node')
         self.declare_parameter('vel_topic', 'cmd_vel')
         self.declare_parameter('scan_topic', 'scan')
-        self.declare_parameter('debug', True)
+        self.declare_parameter('debug', False)
         self.declare_parameter('dist_threshold', 2.0)
         vel_topic_ = self.get_parameter('vel_topic').value
         scan_topic_ = self.get_parameter('scan_topic').value
@@ -60,6 +116,11 @@ class Robot(Node):
         # Debug params
         self.debug =  self.get_parameter('debug').value
         self.dist_threshold = self.get_parameter('dist_threshold').value
+
+        if self.debug:
+            plt.figure(figsize=(12, 8))
+            plt.ion()
+            plt.show()
 
 
         
@@ -103,73 +164,32 @@ class Robot(Node):
         # TODO: START >>>>>>>>>>>>>>>>>>>>>>>>>>>>
         
         
+        # start, end, max_sum = find_open_area(self._scan, window_size=50)
+        start, end = find_largest_window(self._scan, self.dist_threshold)
 
-        # Find sub-sequence with max-accumulated distance
-        def max_subsequence(sequence:list, threshold:float) -> Tuple[int]:
-            max_sum = float("-inf")
-            current_sum = 0
-            start, end = 0, 0
-            temp_start = 0
-
-            actual_value=0
-
-            for i in range(len(sequence)):
-                actual_value = sequence[i] # actual value
-                
-                if actual_value > threshold:
-                    current_sum += actual_value
-                # is smaller, so finish sum
-                else:
-                    if current_sum > max_sum:
-                        max_sum = current_sum
-                        start = temp_start
-                        end = i-1
-                
-                        current_sum = 0
-                    
-
-
-            assert start < len(sequence)
-            assert end < len(sequence)
-            return start, end
-
-        start, end = max_subsequence(self._scan, self.dist_threshold)
-        
-
-
-
-        # # Find 
-        # area_init = 0
-        # area_end = 0
-        # max_value = 0
-        # n = 0
-        # while i < len(self._scan):
-        #     temp_n = 0
-        #     temp_max_value = 0
-        #     while self._scan[i] > self.dist_threshold:
-        #         temp_n += 1
-        #         temp_value += self._scan_f
-        #         i+=1
-        #     temp_max_value = temp_value / temp_n
-        #     if temp_max_value > max_value:
-        #         max_value = temp_max_value
-        #         n = temp_n
-        #     
-        #     i+=1
+        target_index = start + (end - start) // 2 
+        target_angle = self._bearings[target_index] # lidar sensor angle
+        #target_angle = target_angle # If target angle is negative to the right else to the left
         
         
-        speed = 0.0
-        turn = 0.0
         
+        speed = 0.5
+        turn = target_angle
+
         # Debug
         if self.debug:
             plt.cla()
             plt.bar(x=list(range(len(self._scan))), height=self._scan)
             plt.axvline(x=start, color="r")
+            plt.axvline(x=target_index, color="g")
+            plt.text(x=target_index, y=0.5, s=f"{target_angle}", fontsize=12)
             plt.axvline(x=end, color="r")
             plt.axhline(y = self.dist_threshold, color = 'r', linestyle = '-') 
             plt.pause(0.001)
 
+        print("TRUN")
+        print(turn)
+        print()
 
         # TODO: END <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         
@@ -192,11 +212,6 @@ class Robot(Node):
 def main(args=None):
     rclpy.init(args=args)
     rwander_node = Robot()
-
-    # Initialize pytplot
-    plt.figure(figsize=(12, 8))
-    plt.ion()
-    plt.show()
 
     try:
         rclpy.spin(rwander_node)
