@@ -11,25 +11,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from typing import Tuple
 
-def find_open_area(lidar_data, window_size=10):
-    # Elimina distancias muy pequeñas (ruido)
-    filtered_data = np.array([d if d > 0.2 else 0 for d in lidar_data])
-
-    # Suma inicial
-    current_sum = np.sum(filtered_data[:window_size])
-    max_sum = current_sum
-    start_index = 0
-
-    # Sliding window
-    for i in range(1, len(filtered_data) - window_size + 1):
-        current_sum = current_sum - filtered_data[i - 1] + filtered_data[i + window_size - 1]
-        if current_sum > max_sum:
-            max_sum = current_sum
-            start_index = i
-
-    end_index = start_index + window_size - 1
-    return start_index, end_index, max_sum
-
 def find_largest_window(sequence:list, threshold:float, max_distance:float=10.0) -> Tuple[int]:
         max_window = 0
         actual_window = 0
@@ -55,37 +36,12 @@ def find_largest_window(sequence:list, threshold:float, max_distance:float=10.0)
                         
         assert start < len(sequence)
         assert end < len(sequence)
-        return start, end
 
-'''def find_largest_window(sequence:list, threshold:float) -> Tuple[int]:
-        max_sum = float("-inf")
-        current_sum = 0
-        start, end = 0, 0
-        temp_start = 0
-
-        actual_value=0
-
-        for i in range(len(sequence)):
-            actual_value = sequence[i] # actual value
-            
-            if actual_value > threshold:
-                current_sum += actual_value
-            # is smaller, so finish sum
-            else:
-                if current_sum > max_sum:
-                    max_sum = current_sum
-                    start = temp_start
-                    end = i-1
-            
-                    current_sum = 0
-                
-        assert start < len(sequence)
-        assert end < len(sequence)
-        return start, end'''
-
-
-
-
+        value = 0.0
+        if end - start > 0:
+            value = (max_sum / (end - start)) / max_distance
+            value = 1.0  if value > 1.0 else value
+        return start, end, value
 
 class Robot(Node):
     def __init__(self):
@@ -93,7 +49,7 @@ class Robot(Node):
         self.declare_parameter('vel_topic', 'cmd_vel')
         self.declare_parameter('scan_topic', 'scan')
         self.declare_parameter('debug', False)
-        self.declare_parameter('dist_threshold', 2.0)
+        self.declare_parameter('dist_threshold', 1.0)
         vel_topic_ = self.get_parameter('vel_topic').value
         scan_topic_ = self.get_parameter('scan_topic').value
         
@@ -163,33 +119,51 @@ class Robot(Node):
         
         # TODO: START >>>>>>>>>>>>>>>>>>>>>>>>>>>>
         
+        # fov = (-np.pi / 4, np.pi / 4)
+        # fov_indices = np.argwhere((aux_bearing > fov[0]) & (aux_bearing < fov[1])).flatten()
+        len_scan        = len(self._scan)
+        fov_indices     = list(range(len_scan // 4, (len_scan // 4) * 3))
+        #danger_indices  = list(range((len_scan // 8) *3, (len_scan // 8) * 5))
+        danger_indices  = list(range(len_scan//2-80, len_scan//2+80))
+        scan            = np.array(self._scan)
+        bearings        = np.array(self._bearings)
+        fov_scan        = scan[fov_indices]
+        fov_bearings    = bearings[fov_indices]
+
+        danger_scan     = scan[danger_indices]
+
+        danger_dist = 1.0
+        max_distance = 10.0
+
         
-        # start, end, max_sum = find_open_area(self._scan, window_size=50)
-        start, end = find_largest_window(self._scan, self.dist_threshold)
+        # start, end = find_largest_window(self._scan, self.dist_threshold)
+        start, end, value = find_largest_window(fov_scan, self.dist_threshold, max_distance=max_distance)
+        
 
         target_index = start + (end - start) // 2 
-        target_angle = self._bearings[target_index] # lidar sensor angle
-        #target_angle = target_angle # If target angle is negative to the right else to the left
+        target_angle = fov_bearings[target_index] # lidar sensor angle
+        # If target angle is negative to the right else to the left
         
-        
-        
-        speed = 0.5
-        turn = target_angle
+        speed = 0.0
+        if np.mean(danger_scan) < danger_dist:
+            speed = 0.0
+        else:
+            speed = value /2#% 0.5
+        turn = target_angle # + target_angle * value
 
+        print(f"SPEED:  {speed}")
+        print(f"TURN:   {turn}")
         # Debug
         if self.debug:
             plt.cla()
-            plt.bar(x=list(range(len(self._scan))), height=self._scan)
+            plt.bar(x=list(range(len(fov_scan))), height=fov_scan)
+            # plt.bar(x=list(range(len(self._scan))), height=self._scan)
             plt.axvline(x=start, color="r")
             plt.axvline(x=target_index, color="g")
             plt.text(x=target_index, y=0.5, s=f"{target_angle}", fontsize=12)
             plt.axvline(x=end, color="r")
             plt.axhline(y = self.dist_threshold, color = 'r', linestyle = '-') 
             plt.pause(0.001)
-
-        print("TRUN")
-        print(turn)
-        print()
 
         # TODO: END <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         
