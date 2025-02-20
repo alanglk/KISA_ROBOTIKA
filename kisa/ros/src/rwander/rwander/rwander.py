@@ -157,8 +157,6 @@ class Robot(Node):
             speed = value #/1.5#% 0.5
             turn = target_angle # + target_angle * value
         
-
-
         # Debug
         if self.debug:
             plt.cla()
