@@ -12,7 +12,7 @@ def generate_launch_description():
 			{"vel_topic": "cmd_vel"},
 			{"scan_topic": "scan"},
 			{"debug": False},
-            #{'dist_threshold', 2.0}
+            {'dist_threshold': 1.0}
 		],
 		output='screen',
 		emulate_tty=True,

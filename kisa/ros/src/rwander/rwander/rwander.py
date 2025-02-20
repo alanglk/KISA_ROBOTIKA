@@ -12,7 +12,6 @@ import matplotlib.pyplot as plt
 from typing import Tuple
 
 def find_largest_window(sequence: list, threshold: float, max_distance: float = 10.0) -> Tuple[int, int, float]:
-    max_window = 0
     current_sum = 0
     max_sum = 0
     start = 0
@@ -55,13 +54,18 @@ class Robot(Node):
         self.declare_parameter('scan_topic', 'scan')
         self.declare_parameter('debug', False)
         self.declare_parameter('dist_threshold', 1.0)
+
         vel_topic_ = self.get_parameter('vel_topic').value
         scan_topic_ = self.get_parameter('scan_topic').value
         
+        self.dist_threshold = self.get_parameter('dist_threshold').value
+        self.max_distance = 10.0
+
         # ROS Subscribers
         self._laser_sub = self.create_subscription(LaserScan, scan_topic_, self.obstacle_detect, 10)
         # ROS Publishers
         self._cmd_vel_pub = self.create_publisher(Twist, vel_topic_, 10)       
+        
         self._scan_count = 0
         self._max_range = 100.0
         self._uninitialized = 1
@@ -76,7 +80,7 @@ class Robot(Node):
 
         # Debug params
         self.debug =  self.get_parameter('debug').value
-        self.dist_threshold = self.get_parameter('dist_threshold').value
+
 
         if self.debug:
             plt.figure(figsize=(12, 8))
@@ -84,7 +88,6 @@ class Robot(Node):
             plt.show()
 
 
-        
     def obstacle_detect(self, scan_msg):
         
         self._scan = scan_msg.ranges
@@ -124,27 +127,17 @@ class Robot(Node):
         
         # TODO: START >>>>>>>>>>>>>>>>>>>>>>>>>>>>
         
-        # fov = (-np.pi / 4, np.pi / 4)
-        # fov_indices = np.argwhere((aux_bearing > fov[0]) & (aux_bearing < fov[1])).flatten()
         len_scan        = len(self._scan)
         fov_indices     = list(range(len_scan // 4, (len_scan // 4) * 3))
-        # danger_indices  = list(range((len_scan // 8) *3, (len_scan // 8) * 5))
-        danger_indices  = list(range(len_scan//2-80, len_scan//2+80))
+        danger_indices  = list(range(len_scan//2-50, len_scan//2+50))
+
         scan            = np.array(self._scan)
         bearings        = np.array(self._bearings)
         fov_scan        = scan[fov_indices]
         fov_bearings    = bearings[fov_indices]
-
         danger_scan     = scan[danger_indices]
-
-        danger_dist = 1.0
-        max_distance = 10.0
-
         
-        # start, end = find_largest_window(self._scan, self.dist_threshold)
-        start, end, value = find_largest_window(fov_scan, self.dist_threshold, max_distance=max_distance)
-        
-
+        start, end, value = find_largest_window(fov_scan, self.dist_threshold, max_distance=self.max_distance)
         target_index = start + (end - start) // 2 
         target_angle = fov_bearings[target_index] # lidar sensor angle
         # If target angle is negative to the right else to the left
@@ -152,24 +145,24 @@ class Robot(Node):
         danger_value = np.min(danger_scan)
 
         speed = 0.0
-        if  danger_value < danger_dist:
+        if  danger_value < self.dist_threshold:
             speed = 0.0
             turn = target_angle * 2
-            # turn = np.pi/4 if (- np.pi/4 < turn or turn > np.pi/4) else turn
+            
+            # Caso del pasillo -> Marcha atrás en el caso de que no encuentre
+            # una mejor opción
+            if -np.pi/4 < turn and turn < np.pi/4:
+                speed = -0.25
         else:
-            speed = value /2#% 0.5
+            speed = value #/1.5#% 0.5
             turn = target_angle # + target_angle * value
         
-        # speed = 0.25 # value /2
 
-        print(f"SPEED:  {speed}")
-        print(f"TURN:   {turn}")
-        # print(f"DANGER_VALUE:   {danger_value}")
+
         # Debug
         if self.debug:
             plt.cla()
             plt.bar(x=list(range(len(fov_scan))), height=fov_scan)
-            # plt.bar(x=list(range(len(self._scan))), height=self._scan)
             plt.axvline(x=start, color="r")
             plt.axvline(x=target_index, color="g")
             plt.text(x=target_index, y=0.5, s=f"{target_angle}", fontsize=12)
