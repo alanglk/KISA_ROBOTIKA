@@ -11,37 +11,42 @@ import numpy as np
 import matplotlib.pyplot as plt
 from typing import Tuple
 
-def find_largest_window(sequence:list, threshold:float, max_distance:float=10.0) -> Tuple[int]:
-        max_window = 0
-        actual_window = 0
-        start, end = 0, 0
-        temp_start = 0
-        current_sum = 0
-        max_sum = 0
+def find_largest_window(sequence: list, threshold: float, max_distance: float = 10.0) -> Tuple[int, int, float]:
+    max_window = 0
+    current_sum = 0
+    max_sum = 0
+    start = 0
+    end = 0
+    temp_start = 0
+    
+    for i in range(len(sequence)):
+        if sequence[i] > threshold:
+            # Si el valor es mayor que el umbral, se suma al total
+            current_sum += min(sequence[i], max_distance)
+        else:
+            # Si el valor es menor que el umbral, marca el final de una posible secuencia
+            if current_sum > max_sum:
+                max_sum = current_sum
+                start = temp_start
+                end = i - 1
+            current_sum = 0
+            temp_start = i
 
-        for i in range(len(sequence)):
-            if sequence[i] > threshold:
-                if sequence[i] > max_distance:
-                    current_sum += max_distance
-                else:
-                    current_sum += sequence[i]
-            else:
-                # is smaller, so finish sum
-                if current_sum > max_sum:
-                    max_sum = current_sum
-                    start = temp_start
-                    end = i-1
-                current_sum = 0
-                temp_start = i
-                        
-        assert start < len(sequence)
-        assert end < len(sequence)
+    # Evaluar la última secuencia en caso de que no termine con un valor menor que el umbral
+    if current_sum > max_sum:
+        max_sum = current_sum
+        start = temp_start
+        end = len(sequence) - 1
 
+    # Si se encontró una secuencia válida
+    if end - start > 0:
+        value = (max_sum / (end - start)) / max_distance
+        value = 1.0 if value > 1.0 else value
+    else:
         value = 0.0
-        if end - start > 0:
-            value = (max_sum / (end - start)) / max_distance
-            value = 1.0  if value > 1.0 else value
-        return start, end, value
+
+    return start, end, value
+
 
 class Robot(Node):
     def __init__(self):
@@ -123,7 +128,7 @@ class Robot(Node):
         # fov_indices = np.argwhere((aux_bearing > fov[0]) & (aux_bearing < fov[1])).flatten()
         len_scan        = len(self._scan)
         fov_indices     = list(range(len_scan // 4, (len_scan // 4) * 3))
-        #danger_indices  = list(range((len_scan // 8) *3, (len_scan // 8) * 5))
+        # danger_indices  = list(range((len_scan // 8) *3, (len_scan // 8) * 5))
         danger_indices  = list(range(len_scan//2-80, len_scan//2+80))
         scan            = np.array(self._scan)
         bearings        = np.array(self._bearings)
@@ -144,15 +149,22 @@ class Robot(Node):
         target_angle = fov_bearings[target_index] # lidar sensor angle
         # If target angle is negative to the right else to the left
         
+        danger_value = np.min(danger_scan)
+
         speed = 0.0
-        if np.mean(danger_scan) < danger_dist:
+        if  danger_value < danger_dist:
             speed = 0.0
+            turn = target_angle * 2
+            # turn = np.pi/4 if (- np.pi/4 < turn or turn > np.pi/4) else turn
         else:
             speed = value /2#% 0.5
-        turn = target_angle # + target_angle * value
+            turn = target_angle # + target_angle * value
+        
+        # speed = 0.25 # value /2
 
         print(f"SPEED:  {speed}")
         print(f"TURN:   {turn}")
+        # print(f"DANGER_VALUE:   {danger_value}")
         # Debug
         if self.debug:
             plt.cla()
