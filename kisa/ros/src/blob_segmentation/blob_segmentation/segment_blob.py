@@ -10,7 +10,7 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 
 # Import PointStamped msg to communicate with color_follow node
-from geometry_msgs.msg import Point, PointStamped
+from geometry_msgs.msg import Point
 
 class blobDetection(Node):
     def __init__(self):
@@ -29,10 +29,10 @@ class blobDetection(Node):
         self.sub = self.create_subscription( Image, self.image_topic, self.blob_callback, 10)
         
         # ROS PUBLISHERS
-        self.pose_publisher = self.create_publisher(PointStamped, self.color_pose_topic, 10)
+        self.pose_publisher = self.create_publisher(Point, self.color_pose_topic, 10)
 
         # Define Color Follow Parameter
-        self.sel_params = [75, 0, 24, 184, 58, 69]
+        self.sel_params = [0, 0, 124, 60, 60, 255] # LowB, LowG, LowR, HighB, HighG, HighR
         self.params = None
 
         print("Done control window")
@@ -43,31 +43,30 @@ class blobDetection(Node):
         if not self.window_initialized:
             createControlWindow()
             self.window_initialized = True
+            self.setTrackbarParams()
+
         try:
             cv_img = self.bridge.imgmsg_to_cv2(msg, "bgr8")
             self.handleTrackbarChanges()
             
-            cresx, cresy, img, numc = findCentroid(cv_img.copy(), self.params)
+            cresx, cresy, img, numc, bbox_area = findCentroid(cv_img.copy(), self.params)
 
-
-            #
             height, width = msg.width, msg.height
-            center_y , center_x = height // 2, width // 2
+            
+            print(f"cresx: {cresx} cresy: {cresy}")
 
-            x_dir = 0
-            if cresx < center_x:
-                x_dir = 1
-            elif cresx > center_x:
-                x_dir = -1
+            px = cresx / width  * 2.0 -1.0
+            py = cresy / height * 2.0 -1.0
 
-            print(x_dir)
-            # Publish 2d image coords position
-            s = self.get_clock().now().to_msg()
-            h = Header(frame_id=msg.header.frame_id, stamp=s)
-            # p = Point(x=float(cresx), y=float(cresy), z=0.0)
-            p = Point(x=float(x_dir), y=0.0, z=0.0)
-            pose_msg = PointStamped(header=h, point=p)
-            self.pose_publisher.publish(pose_msg)
+
+            # x: rotation target
+            # y: bounding box area (normalized)
+            # z: 1.0 if found centroid else 0.0
+            z = 1.0 if cresx != -1 else 0.0
+            norm_area = bbox_area / (width * height)
+            p = Point(x=float(px), y=float(norm_area), z=float(z))
+
+            self.pose_publisher.publish(p)
 
             if numc < 1:
                 cv2.imshow("Blob segmentation", cv_img)
@@ -80,15 +79,18 @@ class blobDetection(Node):
 
         except CvBridgeError as exc:
             print(traceback.format.exc())
-            
+
+
+
+    def setTrackbarParams(self):
+        cv2.setTrackbarPos('LowB', 'Blob segmentation', self.sel_params[0])
+        cv2.setTrackbarPos('LowG', 'Blob segmentation', self.sel_params[1])
+        cv2.setTrackbarPos('LowR', 'Blob segmentation', self.sel_params[2])
+        cv2.setTrackbarPos('HighB', 'Blob segmentation', self.sel_params[3])
+        cv2.setTrackbarPos('HighG', 'Blob segmentation', self.sel_params[4])
+        cv2.setTrackbarPos('HighR', 'Blob segmentation', self.sel_params[5])
+
     def getTrackbarParams(self):
-        cv2.setTrackbarPos('LowB', self.sel_params[0]),
-        cv2.setTrackbarPos('LowG', self.sel_params[1]),
-        cv2.setTrackbarPos('LowR', 'Blob segmentation'),
-        cv2.setTrackbarPos('HighB', 'Blob segmentation'),
-        cv2.setTrackbarPos('HighG', 'Blob segmentation'),
-        cv2.setTrackbarPos('HighR', 'Blob segmentation')
-        
         return [cv2.getTrackbarPos('LowB', 'Blob segmentation'),
                 cv2.getTrackbarPos('LowG', 'Blob segmentation'),
                 cv2.getTrackbarPos('LowR', 'Blob segmentation'),
@@ -137,7 +139,7 @@ def findCentroid(src, params):
     resy = -1
     numcontours = len(contours)
     if numcontours < 1:
-      return resx, resy, src, numcontours    
+      return resx, resy, src, numcontours, 0.0 
   
     color = (255,255,255)
     # cv2.drawContours(src, contours, -1, color, 3)
@@ -171,7 +173,12 @@ def findCentroid(src, params):
                     biggestContour = contour
                     cv2.rectangle(img_segmented, (x[i], y[i]), (x[i]+w[i], y[i]+h[i]),  color2, 2, 8, 0 )
         i = i+1
-  
+    
+    
+    # Calc max area value
+    bbox_area = w[maxindex] * h[maxindex]
+
+
     #Centroid estimate
     if maxsize >= 10:
         M = cv2.moments( biggestContour, False )
@@ -179,7 +186,7 @@ def findCentroid(src, params):
         resy = int(M['m01']/M['m00'])
     
     # print("%d contours found. Biggest size: %d centroid(%d,%d)"%(len(contours), maxsize, resx, resy))
-    return resx,resy, img_segmented, numcontours #src
+    return resx,resy, img_segmented, numcontours, bbox_area
 
 
 def createControlWindow():

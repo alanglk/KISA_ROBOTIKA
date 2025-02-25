@@ -3,7 +3,7 @@
 import rclpy
 import rclpy.logging
 from rclpy.node import Node
-from geometry_msgs.msg import Twist, PointStamped
+from geometry_msgs.msg import Twist, Point
 import numpy as np
 
 
@@ -12,31 +12,45 @@ class ColorFollow(Node):
         super().__init__('color_follow_node')
         self.declare_parameter('vel_topic', 'cmd_vel')
         self.declare_parameter('color_pose_topic', 'blob_segment/color_pose')
-        self.declare_parameter('robot_frame_id', 'base_footprint')
 
         self.get_logger().info("ColorFollow Node created")
 
         self._vel_topic          = self.get_parameter('vel_topic').value
         self._color_pose_topic   = self.get_parameter('color_pose_topic').value
-        self._robot_frame_id   = self.get_parameter('robot_frame_id').value
 
         # ROS Subscribers
-        self._pose_sub = self.create_subscription(PointStamped, self._color_pose_topic, self.received_position_callback, 10)
+        self._pose_sub = self.create_subscription(Point, self._color_pose_topic, self.received_position_callback, 10)
 
         # ROS Publishers
         self._cmd_vel_pub = self.create_publisher(Twist, self._vel_topic, 10)
-    
-    def received_position_callback(self, msg: PointStamped):
 
-        frame_id = msg.header.frame_id
-        point = msg.point # point.x, point.y, point.z
+        self.last_dir = -1.0
 
-        # Transform from camera coord system to robot coord system
+    def received_position_callback(self, msg: Point):
+        point = msg # point.x, point.y, point.z
+        # x: rotation target
+        # y: bounding box area (normalized)
+        # z: 1.0 if found centroid else 0.0
+        # Only go forward if there is a target centroid in the image
 
-        # Compute angle and speed of robot
+        bbox_area = point.y
+        is_target = point.z
         
-        speed   = 0.0
-        turn    = 0.50 * point.x
+        target_speed = 0.2 * is_target
+        target_rotation = -1.0 * point.x
+
+
+        if is_target == 1.0:
+            self.last_dir = 1.0 if point.x > 1.0 else -1.0
+        else:
+            target_rotation = -1.0 * self.last_dir
+
+        if bbox_area > 0.4:
+            target_speed = 0.0
+
+
+        speed   = target_speed
+        turn    = target_rotation
 
         # Publish actions
         cmd_vel_msg_ = Twist()

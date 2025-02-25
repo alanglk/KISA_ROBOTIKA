@@ -19,7 +19,6 @@ def generate_launch_description():
 		parameters=[
 		{"color_pose_topic": "blob_segment/color_pose"},
 		{"vel_topic": "cmd_vel"},
-		{"robot_frame_id": "base_footprint"},
 		],
 		output='screen',
 		emulate_tty=True,
