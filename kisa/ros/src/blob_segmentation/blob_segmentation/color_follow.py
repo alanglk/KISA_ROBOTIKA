@@ -45,9 +45,8 @@ class ColorFollow(Node):
         else:
             target_rotation = -1.0 * self.last_dir
 
-        if bbox_area > 0.4:
+        if bbox_area > 0.3:
             target_speed = 0.0
-
 
         speed   = target_speed
         turn    = target_rotation
