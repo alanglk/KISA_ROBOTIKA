@@ -154,7 +154,7 @@ class Robot(Node):
             if -np.pi/4 < turn and turn < np.pi/4:
                 speed = -0.25
         else:
-            speed = value #/1.5#% 0.5
+            speed = value /1.5#% 0.5
             turn = target_angle # + target_angle * value
         
         # Debug
