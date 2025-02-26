@@ -5,6 +5,7 @@ import rclpy.logging
 from rclpy.node import Node
 from geometry_msgs.msg import Twist, Point
 import numpy as np
+from typing import Tuple
 
 
 class ColorFollow(Node):
@@ -25,28 +26,49 @@ class ColorFollow(Node):
         self._cmd_vel_pub = self.create_publisher(Twist, self._vel_topic, 10)
 
         self.last_dir = -1.0
+        
+    def compute_actions(self, rotation:float, is_target:float, depth:float) -> Tuple[float, float]:
+        """Returns: [target_speed, target_rotation]
+        """
+        # Default values
+        target_speed    = 0.0
+        target_rotation = -1.0 * self.last_dir
 
+        # There isnt a target centroid
+        if not is_target:
+            target_speed    = 0.0
+            target_rotation = -1.0 * self.last_dir
+            return target_speed, target_rotation
+        self.last_dir = 1.0 if rotation > 1.0 else -1.0
+
+        # If there is not a computed depth for the target
+        if depth < 0.0:
+            target_speed    = 0.2
+            target_rotation = -1.0 * rotation * 2.0
+            return target_speed, target_rotation
+
+        # If there is a target and there is also a depth calculation
+        if depth < 0.5:
+            target_speed    = 0.0
+            target_rotation = -1.0 * rotation * 2.0
+            return target_speed, target_rotation
+
+        # If there is a target and depth
+        target_speed    = 0.2 * depth
+        target_rotation = -1.0 * rotation * 2.0
+        return target_speed, target_rotation
+    
     def received_position_callback(self, msg: Point):
         point = msg # point.x, point.y, point.z
         # x: rotation target
-        # y: bounding box area (normalized)
+        # y: mean of compute depth to target point
         # z: 1.0 if found centroid else 0.0
         # Only go forward if there is a target centroid in the image
 
-        bbox_area = point.y
+        depth = point.y
         is_target = point.z
-        
-        target_speed = 0.2 * is_target
-        target_rotation = -1.0 * point.x
-
-
-        if is_target == 1.0:
-            self.last_dir = 1.0 if point.x > 1.0 else -1.0
-        else:
-            target_rotation = -1.0 * self.last_dir
-
-        if bbox_area > 0.3:
-            target_speed = 0.0
+        rotation = point.x
+        target_speed, target_rotation = self.compute_actions(rotation, is_target, depth)
 
         speed   = target_speed
         turn    = target_rotation
@@ -57,8 +79,6 @@ class ColorFollow(Node):
         cmd_vel_msg_.linear.y  = 0.0
         cmd_vel_msg_.angular.z = turn
         self._cmd_vel_pub.publish( cmd_vel_msg_ ) 
-    
-
 
     def stop(self):
         cmd_vel_msg_ = Twist()      

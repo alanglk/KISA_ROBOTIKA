@@ -1,0 +1,16 @@
+<launch>
+  <arg name="image_topic" default="/camera/rgb/image_raw"/>
+  <arg name="depth_pcl_topic" default="/camera/depth_registered/points"/>
+  <arg name="image_width" default="640"/>
+  <arg name="image_height" default="480"/>
+  <node name="depth_client" pkg="image_depth" type="depth_client.py" output="screen">
+    <param name="image_topic" value="$(arg image_topic)" type="string" />
+    <param name="image_width" value="$(arg image_width)" type="int" />
+    <param name="image_height" value="$(arg image_height)" type="int" />
+  </node>
+  <node name="depth_server" pkg="image_depth" type="depth_server.py" output="screen">
+    <param name="depth_pcl_topic" value="$(arg depth_pcl_topic)" type="string" />
+    <param name="image_width" value="$(arg image_width)" type="int" />
+    <param name="image_height" value="$(arg image_height)" type="int" />
+  </node>
+</launch>

@@ -11,6 +11,7 @@ from cv_bridge import CvBridge, CvBridgeError
 
 # Import PointStamped msg to communicate with color_follow node
 from geometry_msgs.msg import Point
+from depth_interface.srv import GetDepth
 
 class blobDetection(Node):
     def __init__(self):
@@ -31,13 +32,27 @@ class blobDetection(Node):
         # ROS PUBLISHERS
         self.pose_publisher = self.create_publisher(Point, self.color_pose_topic, 10)
 
+        # ROS SERVICE CLIENTS
+        self.client = self.create_client(GetDepth, 'depth_server')
+        while not self.client.wait_for_service(timeout_sec = 1.0):
+            self.get_logger().info('Waiting for service to be available...')
+        self.request = GetDepth.Request()
+        self.client_futures = []
+
         # Define Color Follow Parameter
         self.sel_params = [0, 0, 124, 60, 60, 255] # LowB, LowG, LowR, HighB, HighG, HighR
         self.params = None
 
         print("Done control window")
         self.window_initialized = False
-        
+    
+    def send_depth_request(self, a, b, c, d):
+        self.request.x0 = a
+        self.request.y0 = b
+        self.request.x1 = c
+        self.request.y1 = d
+        self.client_futures.append(self.client.call_async(self.request))
+
     def blob_callback(self, msg):
         #print("inside callback")
         if not self.window_initialized:
@@ -49,14 +64,35 @@ class blobDetection(Node):
             cv_img = self.bridge.imgmsg_to_cv2(msg, "bgr8")
             self.handleTrackbarChanges()
             
-            cresx, cresy, img, numc, bbox_area = findCentroid(cv_img.copy(), self.params)
+            cresx, cresy, img, numc, bbox_area, x0, y0, x1, y1 = findCentroid(cv_img.copy(), self.params)
 
             height, width = msg.width, msg.height
             
             print(f"cresx: {cresx} cresy: {cresy}")
 
+            # Normalize centroid
             px = cresx / width  * 2.0 -1.0
             py = cresy / height * 2.0 -1.0
+
+            # ---- Compute depth ---- 
+            
+            # Send depth request
+            self.send_depth_request(x0, y0, x1, y1)
+            
+            # Check received responses
+            depth   = -1.0
+            std_dev = 0.0
+            removing_indices = []
+            for i, f in enumerate(self.client_futures):
+                if f.done():
+                    r = f.result()
+                    depth   = r.depth
+                    std_dev = r.stdev
+                    removing_indices.append(i)
+            
+            # Remove readed responses
+            # for i in removing_indices:        
+            #     self.client_futures.pop(i)
 
 
             # x: rotation target
@@ -64,7 +100,8 @@ class blobDetection(Node):
             # z: 1.0 if found centroid else 0.0
             z = 1.0 if cresx != -1 else 0.0
             norm_area = bbox_area / (width * height)
-            p = Point(x=float(px), y=float(norm_area), z=float(z))
+            # p = Point(x=float(px), y=float(norm_area), z=float(z))
+            p = Point(x=float(px), y=float(depth), z=float(z))
 
             self.pose_publisher.publish(p)
 
@@ -139,7 +176,7 @@ def findCentroid(src, params):
     resy = -1
     numcontours = len(contours)
     if numcontours < 1:
-      return resx, resy, src, numcontours, 0.0 
+      return resx, resy, src, numcontours, 0.0, -1, -1, -1, -1
   
     color = (255,255,255)
     # cv2.drawContours(src, contours, -1, color, 3)
@@ -177,16 +214,17 @@ def findCentroid(src, params):
     
     # Calc max area value
     bbox_area = w[maxindex] * h[maxindex]
-
+    x0, y0, x1, y1 = -1, -1, -1, -1
 
     #Centroid estimate
     if maxsize >= 10:
         M = cv2.moments( biggestContour, False )
         resx = int(M['m10']/M['m00'])
         resy = int(M['m01']/M['m00'])
+        x0, y0, x1, y1 = x[maxindex], y[maxindex], x[maxindex]+w[maxindex], y[maxindex]+h[maxindex]
     
     # print("%d contours found. Biggest size: %d centroid(%d,%d)"%(len(contours), maxsize, resx, resy))
-    return resx,resy, img_segmented, numcontours, bbox_area
+    return resx,resy, img_segmented, numcontours, bbox_area, x0, y0, x1, y1
 
 
 def createControlWindow():
