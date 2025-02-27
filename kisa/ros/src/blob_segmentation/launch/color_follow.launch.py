@@ -2,12 +2,15 @@ from launch import LaunchDescription
 from launch_ros.actions import Node
 
 def generate_launch_description():
+	use_depth_map = False
+
 	blob_segmentation = Node(
 		package="blob_segmentation",
 		executable="segment_blob",
 		parameters=[
 		{"image_topic": "color/image_raw"},
 		{"color_pose_topic": "blob_segment/color_pose"},
+		{"use_depth_map": use_depth_map},
 		],
 		output='screen',
 		emulate_tty=True,
@@ -19,6 +22,7 @@ def generate_launch_description():
 		parameters=[
 		{"color_pose_topic": "blob_segment/color_pose"},
 		{"vel_topic": "cmd_vel"},
+		{"use_depth_map": use_depth_map},
 		],
 		output='screen',
 		emulate_tty=True,

@@ -16,11 +16,13 @@ from depth_interface.srv import GetDepth
 class blobDetection(Node):
     def __init__(self):
         super().__init__('blob_segmenter_node')
-        self.declare_parameter('image_topic', 'color/image_raw')
         self.declare_parameter('color_pose_topic', 'blob_segment/color_pose')
+        self.declare_parameter('image_topic', 'color/image_raw')
+        self.declare_parameter('use_depth_map', False)
         self.image_topic        = self.get_parameter('image_topic').value
         self.color_pose_topic   = self.get_parameter('color_pose_topic').value
-
+        self.use_depth_map      =  self.get_parameter('use_depth_map').value
+        
         self.get_logger().info('Subscribing to %s image topic'%self.image_topic)
 
         # Create CvBridge
@@ -65,44 +67,42 @@ class blobDetection(Node):
             self.handleTrackbarChanges()
             
             cresx, cresy, img, numc, bbox_area, x0, y0, x1, y1 = findCentroid(cv_img.copy(), self.params)
-
-            height, width = msg.width, msg.height
+            is_centroid = 1.0 if cresx != -1 else 0.0
             
-            print(f"cresx: {cresx} cresy: {cresy}")
+            # Normalize area of bbox
+            height, width = msg.width, msg.height
+            norm_area = bbox_area / (width * height)
 
+            
             # Normalize centroid
             px = cresx / width  * 2.0 -1.0
             py = cresy / height * 2.0 -1.0
 
             # ---- Compute depth ---- 
-            
             # Send depth request
-            self.send_depth_request(x0, y0, x1, y1)
+            if is_centroid == 1.0:
+                self.send_depth_request(x0, y0, x1, y1)
             
             # Check received responses
             depth   = -1.0
             std_dev = 0.0
-            removing_indices = []
-            for i, f in enumerate(self.client_futures):
+            index = 0
+            while index < len(self.client_futures):
+                f = self.client_futures[index]
                 if f.done():
                     r = f.result()
                     depth   = r.depth
                     std_dev = r.stdev
-                    removing_indices.append(i)
+                    self.client_futures.pop(index)
+                index += 1            
             
-            # Remove readed responses
-            # for i in removing_indices:        
-            #     self.client_futures.pop(i)
-
-
             # x: rotation target
-            # y: bounding box area (normalized)
+            # y: bounding box area (normalized) or depth
             # z: 1.0 if found centroid else 0.0
-            z = 1.0 if cresx != -1 else 0.0
-            norm_area = bbox_area / (width * height)
-            # p = Point(x=float(px), y=float(norm_area), z=float(z))
-            p = Point(x=float(px), y=float(depth), z=float(z))
-
+            x = px
+            y = depth if self.use_depth_map else norm_area
+            z = is_centroid
+            p = Point(x=float(x), y=float(y), z=float(z))
             self.pose_publisher.publish(p)
 
             if numc < 1:
