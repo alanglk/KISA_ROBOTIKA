@@ -43,15 +43,15 @@ class ColorFollow(Node):
         self.last_dir = 1.0 if rotation > 1.0 else -1.0
 
         # If there is a target and the area is very big
-        if area > 0.5:
-            target_speed = 0.0
+        if area > 0.2:
+            target_speed = 0.25
             target_rotation = -2.0 * self.last_dir
             return target_speed, target_rotation
         
         # Normal behaviour
         area = area if area > 0.0 else 0.001
         target_speed = (1.0 - area ) / 1.5
-        target_rotation = -1.0 * rotation * 3.0
+        target_rotation = -1.0 * rotation * 2.0
         return target_speed, target_rotation
 
     def compute_actions_with_depth(self, rotation:float, is_target:float, depth:float) -> Tuple[float, float]:

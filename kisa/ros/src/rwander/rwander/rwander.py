@@ -146,7 +146,7 @@ class Robot(Node):
 
         speed = 0.0
         if  danger_value < self.dist_threshold:
-            speed = 0.0
+            speed = 0.1
             turn = target_angle * 2
             
             # Caso del pasillo -> Marcha atrás en el caso de que no encuentre
