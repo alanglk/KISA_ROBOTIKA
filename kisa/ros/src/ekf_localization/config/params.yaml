@@ -1,0 +1,14 @@
+ekf_loc_unknown:
+  ros__parameters:
+    a1: 0.005
+    a2: 1.5 # degrees
+    a3: 0.005
+    a4: 0.005
+    sigma_range: 4.0 # 2.0 #0.45 #10000.0
+    sigma_angle: 3.0 # 1.5 #0.65 #0000.0
+    # odom_topic: '/odometry/filtered'
+    odom_topic: '/rosbot_base_controller/odom'
+    landmarks_topic: 'landmarks'
+ekfloc_visualizer:
+  ros__parameters:
+    odom_topic: '/rosbot_base_controller/odom'

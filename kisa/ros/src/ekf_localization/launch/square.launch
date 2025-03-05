@@ -1,0 +1,6 @@
+<launch>
+  
+  <node name="square_motion" pkg="ekf_localization" type="square_motion.py" output="screen">
+    <!-- <param name="vel_topic" value="/mobile_base/commands/velocity" /> -->
+  </node>
+</launch>

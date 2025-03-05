@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>rigid2d</name>
+  <version>0.0.1</version>
+  <description>Performs rigid 2d boy transformations</description>
+
+  <maintainer email="bostoncleek2020@u.northwestern.edu">bostoncleek</maintainer>
+
+  <license>MIT</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>rclcpp</depend>
+  <depend>sensor_msgs</depend>
+  <depend>landmark_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>tf2</depend>
+  <depend>tf2_ros</depend>
+  <depend>message_generation</depend>
+  <depend>message_runtime</depend>
+
+  <depend>geometry_msgs</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+    <!-- Other tools can request additional information be placed here -->
+
+  </export>
+</package>
