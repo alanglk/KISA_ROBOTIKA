@@ -1,0 +1,27 @@
+mcl_localization:
+  ros__parameters:
+    odom_topic: '/rosbot_base_controller/odom'
+    translation_noise_std_dev: 0.1
+    orientation_noise_std_dev: 0.1
+    laser_eval_beams: 30
+    num_particles: 100
+    globalloc: False
+    resampling_algorithm: 'systematic'
+    # beam sensor model params
+    z_hit: 0.5
+    z_max: 0.05
+    z_rand: 0.5
+    z_short: 0.05
+    range_measurement_noise_hit: 0.3 #sigma_hit
+    range_measurement_noise_short: 0.2 #lambda_short
+    # Somehow we need to provide robots initial pose to the map_server
+    set_initial_pose: True
+    
+
+    
+map_server:
+  ros__parameters:
+    use_sim_time: True
+    # Overridden in launch by the "map" launch configuration or provided default value.
+    # To use in yaml, remove the default "map" value in the tb3_simulation_launch.py file & provide full path to map below.
+    yaml_filename: "/home/ccplaore/irakaskuntza/kisa/ros2_ri2/src/mcl/maps/simple.yaml"

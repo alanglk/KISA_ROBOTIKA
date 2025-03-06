@@ -17,7 +17,7 @@ docker exec -it 57d0325a7216 /bin/bash
 
 ```bash
 printenv |grep -i ROS
-ros2 launch gazebo_worlds gz_rosbot.launch.py world:=simple
+ros2 launch gazebo_worlds gz_rosbot.launch.py world:=simple # landmarks
 ros2 run teleop_twist_keyboard teleop_twist_keyboard
 ros2 launch teleop_twist_joy teleop-launch.py
 ros2 run nav2_map_server map_saver_cli -f "simple" --ros-args -p map_subscribe_transient_local:=false
