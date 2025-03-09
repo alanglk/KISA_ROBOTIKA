@@ -11,23 +11,24 @@ import numpy as np
 import matplotlib.pyplot as plt
 from typing import Tuple
 
+# Función para encontrar la ventana con suma de las distancias
 def find_largest_window(sequence: list, threshold: float, max_distance: float = 10.0) -> Tuple[int, int, float]:
     current_sum = 0
     max_sum = 0
     start = 0
     end = 0
     temp_start = 0
-    
+
+    # recorre toda la secuencia de distancias escaneadas buscando ventanas
     for i in range(len(sequence)):
-        if sequence[i] > threshold:
-            # Si el valor es mayor que el umbral, se suma al total
+        if sequence[i] > threshold: # Si el valor es mayor que el umbral, sigue sumando la distancia
             current_sum += min(sequence[i], max_distance)
-        else:
-            # Si el valor es menor que el umbral, marca el final de una posible secuencia
-            if current_sum > max_sum:
+        else: # Si el valor es menor que el umbral, se termina la secuencia actual
+            if current_sum > max_sum: # Si la secuencia actual es mejor que la anterior, se guarda
                 max_sum = current_sum
                 start = temp_start
                 end = i - 1
+            # Empieza una nueva ventana
             current_sum = 0
             temp_start = i
 
@@ -37,13 +38,14 @@ def find_largest_window(sequence: list, threshold: float, max_distance: float = 
         start = temp_start
         end = len(sequence) - 1
 
-    # Si se encontró una secuencia válida
+    # Si se encontró una secuencia válida, calcula la media de las distancias y lo convierte en un valor entre 0 y 1
     if end - start > 0:
-        value = (max_sum / (end - start)) / max_distance
+        value = (max_sum / (end - start)) / max_distance 
         value = 1.0 if value > 1.0 else value
     else:
         value = 0.0
 
+    # devuelve los índices del comienzo y final de la ventana, y el valor entre 0 y 1
     return start, end, value
 
 
@@ -128,34 +130,45 @@ class Robot(Node):
         # TODO: START >>>>>>>>>>>>>>>>>>>>>>>>>>>>
         
         len_scan        = len(self._scan)
+
+        # obten los índices que corresponden a los 180 grados delanteros del robot
         fov_indices     = list(range(len_scan // 4, (len_scan // 4) * 3))
+        
         danger_indices  = list(range(len_scan//2-50, len_scan//2+50))
 
         scan            = np.array(self._scan)
         bearings        = np.array(self._bearings)
+        # filtra la lista de distancias escaneadas y la lista de rotaciones para obtener solo los que corresponden a los 180 grados delanteros del robot
         fov_scan        = scan[fov_indices]
         fov_bearings    = bearings[fov_indices]
+        # filtra unos pocos escaneos de la parte delantera del robot
         danger_scan     = scan[danger_indices]
-        
+
+        # obtiene la mejor ventana de la lista fov_scan
         start, end, value = find_largest_window(fov_scan, self.dist_threshold, max_distance=self.max_distance)
-        target_index = start + (end - start) // 2 
-        target_angle = fov_bearings[target_index] # lidar sensor angle
-        # If target angle is negative to the right else to the left
         
+        # calcula el índice del centro de la ventana
+        target_index = start + (end - start) // 2 
+
+        # obten la rotación que le corresponde al centro de la ventana
+        target_angle = fov_bearings[target_index] # lidar sensor angle
+
+        # obten el valor mínimo de la danger zone
         danger_value = np.min(danger_scan)
 
         speed = 0.0
+
+        # Si el robot esta muy cerca de un obstáculo frontal, reduce la velocidad y gira
         if  danger_value < self.dist_threshold:
             speed = 0.1
             turn = target_angle * 2
             
-            # Caso del pasillo -> Marcha atrás en el caso de que no encuentre
-            # una mejor opción
+            # en caso de que no pueda hacer nada, atrás
             if -np.pi/4 < turn and turn < np.pi/4:
                 speed = -0.25
-        else:
-            speed = value #/1.5#% 0.5
-            turn = target_angle # + target_angle * value
+        else: # Avanza utilizando como velocaidad lineal el value de la función, y girando con la rotación obtenida de la lista
+            speed = value 
+            turn = target_angle 
         
         # Debug
         if self.debug:
