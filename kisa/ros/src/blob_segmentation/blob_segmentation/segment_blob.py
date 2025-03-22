@@ -67,14 +67,16 @@ class blobDetection(Node):
             self.handleTrackbarChanges()
             
             cresx, cresy, img, numc, bbox_area, x0, y0, x1, y1 = findCentroid(cv_img.copy(), self.params)
+            
+            # if centroid founded 1, otherwise 0
             is_centroid = 1.0 if cresx != -1 else 0.0
             
-            # Normalize area of bbox
+            # Normalize area of bbox into a value between 0 and 1
             height, width = msg.width, msg.height
             norm_area = bbox_area / (width * height)
 
             
-            # Normalize centroid
+            # Normalize centroid to values between 0 and 1
             px = cresx / width  * 2.0 -1.0
             py = cresy / height * 2.0 -1.0
 
