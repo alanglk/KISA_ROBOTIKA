@@ -65,17 +65,17 @@ class blobDetection(Node):
         try:
             cv_img = self.bridge.imgmsg_to_cv2(msg, "bgr8")
             self.handleTrackbarChanges()
-            
+
+            # find centroid of an object and return necessary values
             cresx, cresy, img, numc, bbox_area, x0, y0, x1, y1 = findCentroid(cv_img.copy(), self.params)
             
             # if centroid founded 1, otherwise 0
             is_centroid = 1.0 if cresx != -1 else 0.0
             
-            # Normalize area of bbox into a value between 0 and 1
+            # Normalize area of bbox into a value between 0 and 1. This is used the proportion of the image occuped by the object
             height, width = msg.width, msg.height
             norm_area = bbox_area / (width * height)
 
-            
             # Normalize centroid to values between 0 and 1
             px = cresx / width  * 2.0 -1.0
             py = cresy / height * 2.0 -1.0
@@ -83,7 +83,7 @@ class blobDetection(Node):
             # ---- Compute depth ---- 
             # Send depth request
             if is_centroid == 1.0:
-                self.send_depth_request(x0, y0, x1, y1)
+                self.send_depth_request(x0, y0, x1, y1) # bounding box information is used to run the request
             
             # Check received responses
             depth   = -1.0
@@ -97,7 +97,8 @@ class blobDetection(Node):
                     std_dev = r.stdev
                     self.client_futures.pop(index)
                 index += 1            
-            
+
+            # Prepare the message and send it
             # x: rotation target
             # y: bounding box area (normalized) or depth
             # z: 1.0 if found centroid else 0.0
