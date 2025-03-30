@@ -1,3 +1,47 @@
+# Playing with robots: issues and experiences
+```
+Andrea Bonarini 
+Airlab
+17 de marzo de 2025
+```
+
+A game is ruled while playing is one of the basic activities to learn, train or entertain.
+"Playing with robots is the way we can bring robots at home" and it is a great HRI (Human-Robot-Interaction).
+
+If there are rules in the play, the robot must follow them in order to play the game and there is no space for ineffective or fake interaction.
+Some of the critical issues of the robots when playing with humans are: time, to be realtime responsive; fragile users, such as kids or disabled people and there are some ethical issues to consider.
+
+General market view:
+- Millions of robots are entering the toy market every year
+- None of them ar used in proffesional application
+- They cost less than 200€ (there is a hardware limitation that has to be accomplised)
+
+Traditional toys vs toyrobots:
+Toy robots share with traditional toys some similarities such as shapes, materials, manipulation possibilities and self pressentation, but robot toys manufacturers also has to consider the quality of movement (with the noise and sound associated to the movement) and they are limmited to the use of simple sensors and simple reactions (due to the hardware limitations). However, "tomorrow robot toys" are expected to react to implicit signals, should take initiative on the interactions, should be believable (to be more "human" like), are expected to make the right actions to maintain the attention of the human, should exploit more the phisical aspect and must maintain the low-cost.
+
+Despite this, there are lots of types of play with current robots: copetitive, cooperative, first-person or avatar regarding to how the interaction is made; physical, where players are involved in some physical activity such as sports or cognitive, where players are involved in some cognitive task; free play, practice play, pretend play, contruction play or rule-based play attending the rules or type of task of play...
+
+Also there are some key factors to consider in the robot human interaction:
+- Safety feeling: humans mush percieve the dimensions and the speed of toy robots as safe.
+- Fairness: the robot must comply with the rules and expected level of ability.
+- Engagement: it should be fun to play with the toy robot so it should provide an interesting story, a good challenge which should not be too easy or too hard, it should promote the motivation of winning and a kind of reward and the control and rythm (not to feel stagnated) are also important.
+- Channel of interaction: communication channels...
+
+
+Some examples of the human robot interactions in games are showed in the jedI game, where a drone acts as a droid and the human must deffecd form lasser attacks (as in the star wars movies) or the Robotower, where a competence of who if the human or the robots reaches first the signaled button in a squared arena with four buttons in each of the corners.
+
+
+Inclusive play is another of the hot topics in toy robots. The goal is that anyone should be able to play with robots to gain wheter skill or knowledge and have fun.
+The deffinition of toy  is whatever interesting to play, so How we can trigger interest? with something new that gives exploration and configuration posibilities.
+Inclusive toys today are: toys for "normal" developed children; toys adapted to be used by disabled people; toys for disables people and toys designed for all.
+
+Many research issues are open to implement effective play activities:
+- Realtime user modeling
+- Online adaptations
+- Interaction: pyshical interactions according to language and sentiments
+- Play dynamics
+
+
 # Social Media Mining or Human-Robot Interaction
 ```
 Teresa Onorati
